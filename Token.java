@@ -1,4 +1,6 @@
-
+/**
+ * Representa un token identificado en la entrada del código LISP.
+ */
 
 public class Token {
     private final TokenType type;

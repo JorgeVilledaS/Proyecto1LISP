@@ -1,5 +1,7 @@
 
-// Clase que indica los tipos de token a los que puede asignarse los elementos de texto ingresados
+/**
+ * Enum que define los tipos de tokens posibles en la entrada LISP.
+ */
 
 public enum TokenType {
     INITPAREN,    // (
