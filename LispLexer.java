@@ -109,17 +109,25 @@ public class LispLexer {
     */
 
     public static void main(String[] args) {
-        String code = "(define x 42) (lambda (y) (* y y))";
-        LispLexer LispLexer = new LispLexer(code);
-        List<Token> tokens = LispLexer.tokenize();
-        tokens.forEach(System.out::println);
-        // si los paréntesis están balanceados imprime expresión válida sino imprime expresión inválida y dónde se encuentra el error
-        if (LispLexer.checkParentheses()) {
-            System.out.println("Expresión válida");
-        } else {
-            System.out.println("Expresión inválida");
-            System.out.println("Error en la posición " + LispLexer.getErrorPosition());
+        String code = "(define x 42) (lambda (y) (* y y))"; //Modificar a gusto
+        LispLexer lispLexer = new LispLexer(code);
+        List<Token> tokens = lispLexer.tokenize();
+    
+        // Imprime todos los tokens parseados con formato más estructurado
+        System.out.println("Lista de tokens parseados:");
+        System.out.println("---------------------------");
+        for (Token token : tokens) {
+            System.out.printf("Tipo: %-15s Valor: \"%s\"%n", token.getType(), token.getValue());
         }
-
+        System.out.println("---------------------------");
+    
+        // Verificación de paréntesis balanceados
+        if (lispLexer.checkParentheses()) {
+            System.out.println("Expresión válida :D ");
+        } else {
+            System.out.println("Expresión inválida D: ");
+            System.out.println("Error en la posición: " + lispLexer.getErrorPosition());
+        }
     }
+    
 }
