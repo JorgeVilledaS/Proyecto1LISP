@@ -59,11 +59,39 @@ public class LispLexer {
         }
         return tokens;
     }
+    // Verifica que los paréntesis estén balanceados
+    public boolean checkParentheses() {
+        int count = 0;
+        for (char c : input.toCharArray()) {
+            if (c == '(') {
+                count++;
+            } else if (c == ')') {
+                count--;
+            }
+            if (count < 0) {
+                return false;
+            }
+        }
+        return count == 0;
+    }
+    //Devuelve la posición del error
+    public int getErrorPosition() {
+        return position;
+    }
+    // Métodos de prueba para evaluar el código de 
 
     public static void main(String[] args) {
         String code = "(define x 42) (lambda (y) (* y y))";
         LispLexer LispLexer = new LispLexer(code);
         List<Token> tokens = LispLexer.tokenize();
         tokens.forEach(System.out::println);
+        // si los paréntesis están balanceados imprime expresión válida sino imprime expresión inválida y dónde se encuentra el error
+        if (LispLexer.checkParentheses()) {
+            System.out.println("Expresión válida");
+        } else {
+            System.out.println("Expresión inválida");
+            System.out.println("Error en la posición " + LispLexer.getErrorPosition());
+        }
+
     }
 }
