@@ -2,6 +2,15 @@
 
 Autómata con el que se realizó la lógica del LEXER
 ![image](https://github.com/user-attachments/assets/ffec8097-ab4b-4de1-a58f-1409bd818ace)
+Estados del DFA
+Inicio (S0): Decide qué tipo de token sigue.
+Paréntesis (S1): Detecta ( o ).
+Número (S2): Reconoce números enteros o flotantes.
+Símbolo (S3): Captura nombres de funciones y variables.
+Cadena (S4): Maneja cadenas encerradas en " hasta el cierre.
+Comentario (S5): Ignora texto hasta el final de la línea.
+Operador (S6): Captura +, -, *, /.
+Espacios en blanco (S7): Se ignoran y solo sirven como separadores.
 
 Referencias Lexer
 Como crear Analizador léxico en Java👍 sin Librerías ✔ Fácil!
