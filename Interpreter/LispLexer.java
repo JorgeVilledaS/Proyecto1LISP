@@ -107,27 +107,5 @@ public class LispLexer {
     * Método principal para probar el lexer.
     * @param args Argumentos de la línea de comandos (no utilizados).
     */
-
-    public static void main(String[] args) {
-        String code = "(define x 42) (lambda (y) (* y y))"; //Modificar a gusto
-        LispLexer lispLexer = new LispLexer(code);
-        List<Token> tokens = lispLexer.tokenize();
-    
-        // Imprime todos los tokens parseados con formato más estructurado
-        System.out.println("Lista de tokens parseados:");
-        System.out.println("---------------------------");
-        for (Token token : tokens) {
-            System.out.printf("Tipo: %-15s Valor: \"%s\"%n", token.getType(), token.getValue());
-        }
-        System.out.println("---------------------------");
-    
-        // Verificación de paréntesis balanceados
-        if (lispLexer.checkParentheses()) {
-            System.out.println("Expresión válida :D ");
-        } else {
-            System.out.println("Expresión inválida D: ");
-            System.out.println("Error en la posición: " + lispLexer.getErrorPosition());
-        }
-    }
     
 }

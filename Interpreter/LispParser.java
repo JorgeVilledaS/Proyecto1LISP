@@ -431,50 +431,6 @@ public class LispParser {
         
         return quoteNode;
     }
-
-    /**
-     * Método principal para probar el parser.
-     * @param args Argumentos de la línea de comandos (no utilizados).
-     */
-    public static void main(String[] args) {
-        String code = "(define x 42) (defun square (y) (* y y))";
-        LispLexer lexer = new LispLexer(code);
-        List<Token> tokens = lexer.tokenize();
-        
-        try {
-            LispParser parser = new LispParser(tokens);
-            LispNode ast = parser.parse();
-            System.out.println("Árbol de Sintaxis Abstracta (AST):");
-            printAST(ast, 0);
-        } catch (ParserException e) {
-            System.err.println("Error de parseo: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * Imprime el AST con formato de indentación.
-     * @param node Nodo a imprimir.
-     * @param level Nivel de indentación.
-     */
-    private static void printAST(LispNode node, int level) {
-        StringBuilder indent = new StringBuilder();
-        for (int i = 0; i < level; i++) {
-            indent.append("  ");
-        }
-        
-        System.out.print(indent);
-        System.out.print(node.getType());
-        
-        if (node.getValue() != null) {
-            System.out.print(": " + node.getValue());
-        }
-        
-        System.out.println();
-        
-        for (LispNode child : node.getChildren()) {
-            printAST(child, level + 1);
-        }
-    }
 }
 
 /**
