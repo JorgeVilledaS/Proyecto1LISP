@@ -16,7 +16,7 @@ public class LispLexer {
         Map.entry(Pattern.compile("[-+]?\\d+(\\.\\d+)?"), TokenType.NUMBER),
         Map.entry(Pattern.compile("\"([^\"\\\\]*(?:\\\\.[^\"\\\\]*)*)\""), TokenType.STRING),
         Map.entry(Pattern.compile("[A-Za-z?!*-][A-Za-z0-9?!*-]*"), TokenType.SYMBOL),
-        Map.entry(Pattern.compile("[-+*/]"), TokenType.OPERATOR),
+        Map.entry(Pattern.compile("[-+*/=]"), TokenType.OPERATOR),
         Map.entry(Pattern.compile(";.*"), TokenType.COMMENT),
         Map.entry(Pattern.compile("\\s+"), TokenType.WHITESPACE)
     );

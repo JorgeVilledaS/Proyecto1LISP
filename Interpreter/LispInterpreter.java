@@ -9,11 +9,11 @@ public class LispInterpreter {
     
     /**
      * Método principal del intérprete.
-     * @param args Argumentos de la línea de comandos (no utilizados).
+     * @param args A.
      */
     public static void main(String[] args) {
         boolean exit = false;
-        String code = "(define x 42) (defun square (y) (* y y))"; // Código pa probar
+        String code = " "; // Código predeterminado
         
         System.out.println("=== Intérprete LISP ===");
         
@@ -45,7 +45,7 @@ public class LispInterpreter {
                     break;
                 case 0:
                     exit = true;
-                    System.out.println("¡Hasta pronto!");
+                    System.out.println("¡Orale!");
                     break;
                 default:
                     System.out.println("Opción no válida. Intente nuevamente.");
@@ -94,7 +94,7 @@ public class LispInterpreter {
         String line;
         
         while (true) {
-            line = scanner.nextLine();
+            line = scanner.nextLine().toLowerCase();
             if (line.equals("fin")) {
                 break;
             }

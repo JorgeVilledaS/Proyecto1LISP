@@ -121,7 +121,7 @@ public class LispParser {
             throw new ParserException("Se esperaba paréntesis de cierre");
         }
         
-        // Consumimos el paréntesis de cierre
+        // Pa quitar el parentesis de cierre
         position++;
         
         return listNode;
