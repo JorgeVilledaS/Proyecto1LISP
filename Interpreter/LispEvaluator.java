@@ -91,7 +91,7 @@ public class LispEvaluator {
                 return evaluateList(ast, env);
                 
             case PROGRAM:
-                // Un programa es una secuencia de expresiones, devolvemos el resultado de la última
+                // Esto es la secuencia de expresiones, devolvemos el resultado de la última
                 Object result = null;
                 for (LispNode expr : ast.getChildren()) {
                     result = evaluate(expr, env);
