@@ -1,11 +1,13 @@
 /**
  * Clase principal para el intérprete LISP.
- * Proporciona un menú interactivo que integra el lexer y el parser.
+ * Proporciona un menú interactivo que integra el lexer, el parser y el evaluador.
  */
 import java.util.*;
+import java.util.function.Function;
 
 public class LispInterpreter {
     private static final Scanner scanner = new Scanner(System.in);
+    private static LispEvaluator evaluator;
     
     /**
      * Método principal del intérprete.
@@ -14,6 +16,7 @@ public class LispInterpreter {
     public static void main(String[] args) {
         boolean exit = false;
         String code = " "; // Código predeterminado
+        evaluator = new LispEvaluator(); 
         
         System.out.println("=== Intérprete LISP ===");
         
@@ -43,6 +46,9 @@ public class LispInterpreter {
                 case 6:
                     runFullAnalysis(code);
                     break;
+                case 7:
+                    runEvaluation(code);
+                    break;
                 case 0:
                     exit = true;
                     System.out.println("¡Orale!");
@@ -66,6 +72,7 @@ public class LispInterpreter {
         System.out.println("4. Verificar paréntesis balanceados");
         System.out.println("5. Ejecutar análisis sintáctico (Parser)");
         System.out.println("6. Ejecutar análisis completo (Lexer + Parser)");
+        System.out.println("7. Ejecutar evaluación (Lexer + Parser + Evaluator)");
         System.out.println("0. Salir");
         System.out.print("Seleccione una opción: ");
     }
@@ -200,6 +207,108 @@ public class LispInterpreter {
         } catch (Exception e) {
             System.err.println("Error en el análisis: " + e.getMessage());
         }
+    }
+
+    /**
+     * Ejecuta la evaluación completa (léxico + sintáctico + evaluador) en el código dado.
+     * @param code Código LISP a evaluar.
+     */
+    private static void runEvaluation(String code) {
+        System.out.println("\n=== Evaluación Completa (Lexer + Parser + Evaluator) ===");
+        
+        try {
+            // Paso 1: Análisis Léxico
+            System.out.println("\n--- Paso 1: Análisis Léxico ---");
+            LispLexer lexer = new LispLexer(code);
+            List<Token> tokens = lexer.tokenize();
+            
+            System.out.println("Lista de tokens parseados: " + tokens.size() + " tokens");
+            
+            // Verificación de paréntesis
+            if (!lexer.checkParentheses()) {
+                System.out.println("¡Advertencia! Paréntesis desbalanceados.");
+                System.out.println("Error en la posición: " + lexer.getErrorPosition());
+                return;
+            }
+            
+            // Paso 2: Análisis Sintáctico
+            System.out.println("\n--- Paso 2: Análisis Sintáctico ---");
+            LispParser parser = new LispParser(tokens);
+            LispNode ast = parser.parse();
+            
+            System.out.println("AST generado con éxito.");
+            
+            // Paso 3: Evaluación
+            System.out.println("\n--- Paso 3: Evaluación ---");
+            Map<String, Object> env = new HashMap<>();
+            Object result = evaluator.evaluate(ast, env);
+            
+            System.out.println("Resultado de la evaluación:");
+            System.out.println("---------------------------");
+            printResult(result);
+            System.out.println("---------------------------");
+            
+            System.out.println("\nEvaluación completa finalizada con éxito.");
+        } catch (Exception e) {
+            System.err.println("Error en la evaluación: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Imprime el resultado de la evaluación con formato adecuado.
+     * @param result Resultado de la evaluación
+     */
+    private static void printResult(Object result) {
+        if (result == null) {
+            System.out.println("nil");
+        } else if (result instanceof List) {
+            printList((List<?>) result);
+        } else if (result instanceof Double) {
+            Double num = (Double) result;
+            // Si es un entero, mostrarlo sin decimal
+            if (num == Math.floor(num)) {
+                System.out.println(num.longValue());
+            } else {
+                System.out.println(num);
+            }
+        } else if (result instanceof Function) {
+            System.out.println("#<función>");
+        } else {
+            System.out.println(result);
+        }
+    }
+    
+    /**
+     * Imprime una lista con formato LISP.
+     * @param list Lista a imprimir
+     */
+    private static void printList(List<?> list) {
+        if (list.isEmpty()) {
+            System.out.println("()");
+            return;
+        }
+        
+        System.out.print("(");
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) {
+                System.out.print(" ");
+            }
+            Object item = list.get(i);
+            if (item instanceof List) {
+                printList((List<?>) item);
+            } else if (item instanceof Double) {
+                Double num = (Double) item;
+                if (num == Math.floor(num)) {
+                    System.out.print(num.longValue());
+                } else {
+                    System.out.print(num);
+                }
+            } else {
+                System.out.print(item);
+            }
+        }
+        System.out.print(")");
     }
     
     /**
