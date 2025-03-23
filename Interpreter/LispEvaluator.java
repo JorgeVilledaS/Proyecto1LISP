@@ -5,8 +5,6 @@
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.List;
-import java.util.OptionalDouble;
 
 public class LispEvaluator {
     // Usamos Map<String, Object> como si fuera un ambiente (No entiendo bien que es un environment aun, entonces mejor usar Map)
@@ -55,19 +53,16 @@ public class LispEvaluator {
         globalEnv.put("list?", (Function<List<Object>, Object>) this::isList);
     }
     
-    public Object add(List<Object> args) {
-        // Validación: Asegura que la lista no está vacía
-        if (args == null || args.isEmpty()) {
-            throw new RuntimeException("La función '+' requiere al menos un argumento.");
+    private Object add(List<Object> args) {
+        double result = 0;
+        for (Object arg : args) {
+            if (arg instanceof Double) {
+                result += (Double) arg;
+            } else {
+                throw new RuntimeException("Se esperaba un número: " + arg);
+            }
         }
-        
-        // Usando stream para optimizar y evitar el bucle explícito
-        OptionalDouble sum = args.stream()
-            .mapToDouble(arg -> ((Number) arg).doubleValue()) // Convierte cada argumento a double
-            .reduce(Double::sum); // Suma todos los valores
-        
-        // Si el OptionalDouble tiene un valor, lo retorna; si no, lanza una excepción
-        return sum.orElseThrow(() -> new RuntimeException("Error en la operación de suma."));
+        return result;
     }
 
     public Object subtract(List<Object> args) {
