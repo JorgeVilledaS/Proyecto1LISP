@@ -404,6 +404,58 @@ public class LispEvaluator {
     }
 
     /**
+     * Evalúa una expresión if.
+     * @param ifNode Nodo que representa la expresión if
+     * @param env Entorno de evaluación
+     * @return Resultado de la evaluación
+     */
+    private Object evaluateIf(LispNode ifNode, Map<String, Object> env) {
+        List<LispNode> children = ifNode.getChildren();
+        
+        // Evaluar la condición
+        Object condition = evaluate(children.get(1), env);
+        
+        // Evaluar then o else según el resultado de la condición
+        if (EsVerdadero(condition)) {
+            return evaluate(children.get(2), env);  // Rama then
+        } else if (children.size() > 3) {
+            return evaluate(children.get(3), env);  // Rama else
+        } else {
+            return null;  // No hay rama else
+        }
+    }
+    
+    /**
+     * Evalúa una expresión cond.
+     * @param condNode Nodo que representa la expresión cond
+     * @param env Entorno de evaluación
+     * @return Resultado de la evaluación
+     */
+    private Object evaluateCond(LispNode condNode, Map<String, Object> env) {
+        List<LispNode> clauses = condNode.getChildren();
+        
+        // Saltar el nodo "cond"
+        for (int i = 1; i < clauses.size(); i++) {
+            LispNode clause = clauses.get(i);
+            List<LispNode> clauseBody = clause.getChildren();
+            
+            // Evaluar la condición de la condici[on]
+            Object condition = evaluate(clauseBody.get(0), env);
+            
+            if (EsVerdadero(condition)) {
+                // Si la condición es verdadera, evaluar el cuerpo de la condici[on]
+                Object result = null;
+                for (int j = 1; j < clauseBody.size(); j++) {
+                    result = evaluate(clauseBody.get(j), env);
+                }
+                return result;
+            }
+        }
+        
+        return null;  
+    }
+
+    /**
      * Evalúa una llamada a función.
      * @param callNode Nodo que representa la llamada a función
      * @param env Entorno de evaluación
