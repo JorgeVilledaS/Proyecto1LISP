@@ -402,6 +402,34 @@ public class LispEvaluator {
         // Llamada a función: evaluar el operador y los argumentos
         return evaluateFunctionCall(listNode, env);
     }
+
+    /**
+     * Evalúa una llamada a función.
+     * @param callNode Nodo que representa la llamada a función
+     * @param env Entorno de evaluación
+     * @return Resultado de la llamada a función
+     */
+    private Object evaluateFunctionCall(LispNode callNode, Map<String, Object> env) {
+        List<LispNode> children = callNode.getChildren();
+        
+        // Evaluar el operador (primer elemento de la lista)
+        Object operator = evaluate(children.get(0), env);
+        
+        // Evaluar los argumentos
+        List<Object> args = new ArrayList<>();
+        for (int i = 1; i < children.size(); i++) {
+            args.add(evaluate(children.get(i), env));
+        }
+        
+        // Aplicar la función
+        if (operator instanceof Function) {
+            @SuppressWarnings("unchecked")
+            Function<List<Object>, Object> func = (Function<List<Object>, Object>) operator;
+            return func.apply(args);
+        } else {
+            throw new RuntimeException("No se puede llamar como función: " + operator);
+        }
+    }
     
     /**
      * Convierte un nodo del AST a un valor sin evaluarlo (para quote).
@@ -491,4 +519,6 @@ public class LispEvaluator {
             return name;
         }
     }
+
+
 }
