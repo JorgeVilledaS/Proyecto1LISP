@@ -5,8 +5,6 @@
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.List;
-import java.util.OptionalDouble;
 
 public class LispEvaluator {
     // Usamos Map<String, Object> como si fuera un ambiente (No entiendo bien que es un environment aun, entonces mejor usar Map)
@@ -56,50 +54,31 @@ public class LispEvaluator {
     }
     
     public Object add(List<Object> args) {
-        // Validación: Asegura que la lista no está vacía
-        if (args == null || args.isEmpty()) {
-            throw new RuntimeException("La función '+' requiere al menos un argumento.");
+        double sum = 0;
+        for (Object arg : args) {
+            sum += ((Number) arg).doubleValue();
         }
-        
-        // Usando stream para optimizar y evitar el bucle explícito
-        OptionalDouble sum = args.stream()
-            .mapToDouble(arg -> ((Number) arg).doubleValue()) // Convierte cada argumento a double
-            .reduce(Double::sum); // Suma todos los valores
-        
-        // Si el OptionalDouble tiene un valor, lo retorna; si no, lanza una excepción
-        return sum.orElseThrow(() -> new RuntimeException("Error en la operación de suma."));
+        return sum;
     }
 
     public Object subtract(List<Object> args) {
-        // Validación: Requiere al menos un argumento
-        if (args == null || args.isEmpty()) {
+        if (args.isEmpty()) {
             throw new RuntimeException("La función '-' requiere al menos un argumento.");
         }
-
-        // Usando el primer elemento como base y restando el resto
         double result = ((Number) args.get(0)).doubleValue();
         for (int i = 1; i < args.size(); i++) {
             result -= ((Number) args.get(i)).doubleValue();
         }
-
         return result;
     }
 
     public Object multiply(List<Object> args) {
-        // Validación: Asegura que no sea una lista vacía
-        if (args == null || args.isEmpty()) {
-            throw new RuntimeException("La función '*' requiere al menos un argumento.");
+        double product = 1;
+        for (Object arg : args) {
+            product *= ((Number) arg).doubleValue();
         }
-
-        // Usando streams para multiplicar
-        OptionalDouble product = args.stream()
-            .mapToDouble(arg -> ((Number) arg).doubleValue()) // Convierte cada argumento a double
-            .reduce((a, b) -> a * b); // Multiplica todos los elementos
-
-        // Si el OptionalDouble tiene un valor, lo retorna; si no, lanza una excepción
-        return product.orElseThrow(() -> new RuntimeException("Error en la operación de multiplicación."));
+        return product;
     }
-}
 
 
     /**
