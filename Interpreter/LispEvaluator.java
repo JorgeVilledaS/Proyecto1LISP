@@ -53,6 +53,27 @@ public class LispEvaluator {
         globalEnv.put("list?", (Function<List<Object>, Object>) this::isList);
     }
     
+        /**
+     * Evalúa si un valor es considerado "verdadero" en LISP.
+     * @param value Valor a evaluar
+     * @return true si el valor es "verdadero", false en caso contrario
+     */
+    private boolean EsVerdadero(Object value) {
+        if (value == null) {
+            return false;
+        }
+        if (value instanceof Boolean) {
+            return (Boolean) value;
+        }
+        if (value instanceof List) {
+            return !((List<?>) value).isEmpty();
+        }
+        if (value instanceof Double) {
+            return ((Double) value) != 0.0;
+        }
+        return true;
+    }
+
     private Object add(List<Object> args) {
         double result = 0;
         for (Object arg : args) {
@@ -215,7 +236,7 @@ public class LispEvaluator {
             if (!EsVerdadero(arg)) {
                 return false;
             }
-            result = arg;  // El último valor verdadero
+            result = arg;  
         }
         
         return result;
