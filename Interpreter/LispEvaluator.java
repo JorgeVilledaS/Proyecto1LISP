@@ -342,12 +342,6 @@ public class LispEvaluator {
     }
 
 
-    /**
-     * Método principal para evaluar un nodo del AST.
-     * @param ast Nodo a evaluar
-     * @param env Entorno de evaluación (mapa de símbolos a valores)
-     * @return Resultado de la evaluación
-     */
     public Object evaluate(LispNode ast, Map<String, Object> env) {
         if (ast == null) {
             return null;
@@ -369,6 +363,32 @@ public class LispEvaluator {
                     return globalEnv.get(symbol);
                 }
                 throw new RuntimeException("Símbolo no definido: " + symbol);
+                
+            case OPERATOR:
+                // Manejar los operadores de manera similar a los símbolos
+                String op = ast.getValue();
+                if (globalEnv.containsKey(op)) {
+                    return globalEnv.get(op);
+                }
+                throw new RuntimeException("Operador no definido: " + op);
+                
+            case DEFINE:
+                return evaluateDefine(ast,env);
+
+            case IF:
+                return evaluateIf(ast, env);
+                
+            case COND:
+                return evaluateCond(ast, env);
+                
+            case LAMBDA:
+                return evaluateLambda(ast, env);
+                
+            case LET:
+                return evaluateLet(ast, env);
+                
+            case SETQ:
+                return evaluateSetq(ast, env);
                 
             case LIST:
                 // Lista vacía
@@ -414,6 +434,7 @@ public class LispEvaluator {
                     return quoteExpression(children.get(1));
                     
                 case "define":
+                    return evaluateDefine(listNode,env);
                 case "defun":
                     return evaluateDefine(listNode, env);
                     
@@ -544,46 +565,36 @@ public class LispEvaluator {
                 return null;
         }
     }
-    
-    /**
-     * Evalúa una definición (define/defun).
-     * @param defineNode Nodo que representa la definición
-     * @param env Entorno de evaluación
-     * @return Resultado de la definición (generalmente el símbolo definido)
-     */
+
     private Object evaluateDefine(LispNode defineNode, Map<String, Object> env) {
         List<LispNode> children = defineNode.getChildren();
         
         // Obtener el nombre (símbolo) para la definición
-        LispNode nameNode = children.get(1);
-        String name = nameNode.getValue();
+        String name = children.get(0).getValue();  // Primer hijo es el nombre de la función
         
-        // Distinguir entre definición de función y variable
-        if (children.get(0).getValue().equals("defun")) {
-            // Definición de función (defun name (params) body)
-            LispNode paramsNode = children.get(2);
+        // Para una definición de función (defun)
+        if (defineNode.getValue().equals("defun")) {
+            // Parámetros están en children.get(1) que es un nodo PARAMS
+            LispNode paramsNode = children.get(1);
             List<String> params = new ArrayList<>();
-            
             for (LispNode param : paramsNode.getChildren()) {
                 params.add(param.getValue());
             }
             
-            // Recopilar el cuerpo de la función (puede ser múltiples expresiones)
-            List<LispNode> bodyNodes = new ArrayList<>();
-            for (int i = 3; i < children.size(); i++) {
-                bodyNodes.add(children.get(i));
-            }
+            // El cuerpo de la función está en los nodos restantes
+            List<LispNode> bodyNodes = new ArrayList<>(children.subList(2, children.size()));
             
-            // Crear función como un lambda
+            // Crear una función que capture los parámetros
             Function<List<Object>, Object> function = args -> {
+                // Crear un nuevo entorno para la ejecución de la función
                 Map<String, Object> functionEnv = new HashMap<>(env);
                 
-                // Vincular argumentos a parámetros
+                // Vincular los argumentos a los parámetros
                 for (int i = 0; i < params.size(); i++) {
                     if (i < args.size()) {
                         functionEnv.put(params.get(i), args.get(i));
                     } else {
-                        functionEnv.put(params.get(i), null); // parámetro sin valor
+                        functionEnv.put(params.get(i), null); // Parámetro sin valor
                     }
                 }
                 
@@ -595,12 +606,12 @@ public class LispEvaluator {
                 return result;
             };
             
+            // Guardar la función en el entorno global
             globalEnv.put(name, function);
             return name;
-            
         } else {
-            // Definición de variable (define name value)
-            Object value = evaluate(children.get(2), env);
+            // Define normal (variable)
+            Object value = evaluate(children.get(1), env);
             globalEnv.put(name, value);
             return name;
         }
