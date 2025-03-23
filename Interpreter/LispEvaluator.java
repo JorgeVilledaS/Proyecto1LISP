@@ -86,27 +86,6 @@ public class LispEvaluator {
             return result;
         };
     }
-    private Object or(List<Object> args) {
-        for (Object arg : args) {
-            if (arg != null && !Boolean.FALSE.equals(arg)) {
-                return arg; // Devuelve el primer valor verdadero
-            }
-        }
-        return false; // Si ninguno es verdadero, devuelve false
-    }
-    private Object evaluateCond(LispNode condNode, Map<String, Object> env) {
-        for (LispNode clause : condNode.getChildren()) {
-            LispNode testNode = clause.getChildren().get(0);
-            Object testResult = evaluate(testNode, env);
-            
-            if (testResult != null && !Boolean.FALSE.equals(testResult)) {
-                // Evaluar y devolver el resultado de la cláusula
-                LispNode exprNode = clause.getChildren().get(1);
-                return evaluate(exprNode, env);
-            }
-        }
-        return null; // Si ninguna cláusula es verdadera, devuelve null
-    }
 
 
         /**
@@ -626,4 +605,59 @@ public class LispEvaluator {
             return name;
         }
     }
+
+    /**
+     * Evalúa una expresión let.
+     * @param letNode Nodo que representa la expresión let
+     * @param env Entorno de evaluación
+     * @return Resultado de la evaluación
+     */
+    private Object evaluateLet(LispNode letNode, Map<String, Object> env) {
+        List<LispNode> children = letNode.getChildren();
+        
+        // Crear un nuevo entorno para el let
+        Map<String, Object> letEnv = new HashMap<>(env);
+        
+        // Procesar los bindings
+        LispNode bindingsNode = children.get(1);
+        for (LispNode bindingNode : bindingsNode.getChildren()) {
+            List<LispNode> binding = bindingNode.getChildren();
+            String varName = binding.get(0).getValue();
+            Object varValue = evaluate(binding.get(1), env); 
+            letEnv.put(varName, varValue);
+        }
+        
+        // Evaluar el cuerpo con el nuevo entorno
+        Object result = null;
+        for (int i = 2; i < children.size(); i++) {
+            result = evaluate(children.get(i), letEnv);
+        }
+        
+        return result;
+    }
+
+    /**
+     * Evalúa una expresión setq (asignación).
+     * @param setqNode Nodo que representa la expresión setq
+     * @param env Entorno de evaluación
+     * @return Valor asignado
+     */
+    private Object evaluateSetq(LispNode setqNode, Map<String, Object> env) {
+        List<LispNode> children = setqNode.getChildren();
+        
+        String symbol = children.get(1).getValue();
+        Object value = evaluate(children.get(2), env);
+        
+        // Buscar el símbolo en el entorno actual o global
+        if (env.containsKey(symbol)) {
+            env.put(symbol, value);
+        } else if (globalEnv.containsKey(symbol)) {
+            globalEnv.put(symbol, value);
+        } else {
+            throw new RuntimeException("No se puede asignar a un símbolo no definido: " + symbol);
+        }
+        
+        return value;
+    }
+
 }
