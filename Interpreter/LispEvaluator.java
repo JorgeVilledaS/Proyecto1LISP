@@ -29,30 +29,86 @@ public class LispEvaluator {
         globalEnv.put("-", (Function<List<Object>, Object>) this::subtract);
         globalEnv.put("*", (Function<List<Object>, Object>) this::multiply);
         globalEnv.put("/", (Function<List<Object>, Object>) this::divide);
-        
+
         // Operaciones de comparación
         globalEnv.put("=", (Function<List<Object>, Object>) this::equals);
         globalEnv.put("<", (Function<List<Object>, Object>) this::lessThan);
         globalEnv.put(">", (Function<List<Object>, Object>) this::greaterThan);
-        
+
         // Funciones de lista
         globalEnv.put("car", (Function<List<Object>, Object>) this::car);
         globalEnv.put("cdr", (Function<List<Object>, Object>) this::cdr);
         globalEnv.put("cons", (Function<List<Object>, Object>) this::cons);
         globalEnv.put("list", (Function<List<Object>, Object>) args -> args);
-        
+
         // Funciones lógicas
         globalEnv.put("and", (Function<List<Object>, Object>) this::and);
         globalEnv.put("or", (Function<List<Object>, Object>) this::or);
         globalEnv.put("not", (Function<List<Object>, Object>) this::not);
-        
+
         // Funciones de tipo
         globalEnv.put("null?", (Function<List<Object>, Object>) this::isNull);
         globalEnv.put("number?", (Function<List<Object>, Object>) this::isNumber);
         globalEnv.put("symbol?", (Function<List<Object>, Object>) this::isSymbol);
         globalEnv.put("list?", (Function<List<Object>, Object>) this::isList);
     }
-    
+    private Object evaluateLambda(LispNode lambdaNode, Map<String, Object> env) {
+        List<LispNode> children = lambdaNode.getChildren();
+        
+        // Obtener los parámetros
+        LispNode paramsNode = children.get(0);
+        List<String> params = new ArrayList<>();
+        for (LispNode param : paramsNode.getChildren()) {
+            params.add(param.getValue());
+        }
+        
+        // Obtener el cuerpo de la función
+        List<LispNode> bodyNodes = new ArrayList<>(children.subList(1, children.size()));
+        
+        // Crear y devolver la función
+        return (Function<List<Object>, Object>) args -> {
+            Map<String, Object> functionEnv = new HashMap<>(env);
+            
+            // Vincular argumentos a parámetros
+            for (int i = 0; i < params.size(); i++) {
+                if (i < args.size()) {
+                    functionEnv.put(params.get(i), args.get(i));
+                } else {
+                    functionEnv.put(params.get(i), null); // Parámetro sin valor
+                }
+            }
+            
+            // Evaluar el cuerpo de la función
+            Object result = null;
+            for (LispNode bodyNode : bodyNodes) {
+                result = evaluate(bodyNode, functionEnv);
+            }
+            return result;
+        };
+    }
+    private Object or(List<Object> args) {
+        for (Object arg : args) {
+            if (arg != null && !Boolean.FALSE.equals(arg)) {
+                return arg; // Devuelve el primer valor verdadero
+            }
+        }
+        return false; // Si ninguno es verdadero, devuelve false
+    }
+    private Object evaluateCond(LispNode condNode, Map<String, Object> env) {
+        for (LispNode clause : condNode.getChildren()) {
+            LispNode testNode = clause.getChildren().get(0);
+            Object testResult = evaluate(testNode, env);
+            
+            if (testResult != null && !Boolean.FALSE.equals(testResult)) {
+                // Evaluar y devolver el resultado de la cláusula
+                LispNode exprNode = clause.getChildren().get(1);
+                return evaluate(exprNode, env);
+            }
+        }
+        return null; // Si ninguna cláusula es verdadera, devuelve null
+    }
+
+
         /**
      * Evalúa si un valor es considerado "verdadero" en LISP.
      * @param value Valor a evaluar
@@ -402,7 +458,6 @@ public class LispEvaluator {
         // Llamada a función: evaluar el operador y los argumentos
         return evaluateFunctionCall(listNode, env);
     }
-
     /**
      * Evalúa una expresión if.
      * @param ifNode Nodo que representa la expresión if
@@ -571,6 +626,4 @@ public class LispEvaluator {
             return name;
         }
     }
-
-
 }
