@@ -84,6 +84,207 @@ public class LispEvaluator {
         return product;
     }
 
+    private Object divide(List<Object> args) {
+        if (args.isEmpty()) {
+            return 1.0;
+        }
+        
+        if (!(args.get(0) instanceof Double)) {
+            throw new RuntimeException("Se esperaba un número: " + args.get(0));
+        }
+        
+        double result = (Double) args.get(0);
+        
+        if (args.size() == 1) {
+            return 1.0 / result;  
+        }
+        
+        for (int i = 1; i < args.size(); i++) {
+            Object arg = args.get(i);
+            if (arg instanceof Double) {
+                double divisor = (Double) arg;
+                if (divisor == 0) {
+                    throw new RuntimeException("División por cero");
+                }
+                result /= divisor;
+            } else {
+                throw new RuntimeException("Se esperaba un número: " + arg);
+            }
+        }
+        
+        return result;
+    }
+    
+    private Object equals(List<Object> args) {
+        if (args.size() < 2) {
+            return true;  
+        }
+        
+        Object first = args.get(0);
+        for (int i = 1; i < args.size(); i++) {
+            if (!Objects.equals(first, args.get(i))) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    private Object lessThan(List<Object> args) {
+        if (args.size() < 2) {
+            return true;  // Por definición
+        }
+        
+        for (int i = 0; i < args.size() - 1; i++) {
+            if (!(args.get(i) instanceof Double) || !(args.get(i + 1) instanceof Double)) {
+                throw new RuntimeException("Se esperaban números para comparación");
+            }
+            
+            if ((Double) args.get(i) >= (Double) args.get(i + 1)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    private Object greaterThan(List<Object> args) {
+        if (args.size() < 2) {
+            return true;  // Por definición
+        }
+        
+        for (int i = 0; i < args.size() - 1; i++) {
+            if (!(args.get(i) instanceof Double) || !(args.get(i + 1) instanceof Double)) {
+                throw new RuntimeException("Se esperaban números para comparación");
+            }
+            
+            if ((Double) args.get(i) <= (Double) args.get(i + 1)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    private Object car(List<Object> args) {
+        if (args.size() != 1 || !(args.get(0) instanceof List)) {
+            throw new RuntimeException("car requiere una lista como argumento");
+        }
+        
+        List<?> list = (List<?>) args.get(0);
+        if (list.isEmpty()) {
+            return null;
+        }
+        
+        return list.get(0);
+    }
+    
+    private Object cdr(List<Object> args) {
+        if (args.size() != 1 || !(args.get(0) instanceof List)) {
+            throw new RuntimeException("cdr requiere una lista como argumento");
+        }
+        
+        List<?> list = (List<?>) args.get(0);
+        if (list.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        return new ArrayList<>(list.subList(1, list.size()));
+    }
+    
+    private Object cons(List<Object> args) {
+        if (args.size() != 2 || !(args.get(1) instanceof List)) {
+            throw new RuntimeException("cons requiere dos argumentos, el segundo debe ser una lista");
+        }
+        
+        Object first = args.get(0);
+        @SuppressWarnings("unchecked")
+        List<Object> rest = new ArrayList<>((List<Object>) args.get(1));
+        
+        rest.add(0, first);
+        return rest;
+    }
+    
+    private Object and(List<Object> args) {
+        if (args.isEmpty()) {
+            return true;
+        }
+        
+        Object result = true;
+        for (Object arg : args) {
+            if (!EsVerdadero(arg)) {
+                return false;
+            }
+            result = arg;  // El último valor verdadero
+        }
+        
+        return result;
+    }
+    
+    private Object or(List<Object> args) {
+        if (args.isEmpty()) {
+            return false;
+        }
+        
+        for (Object arg : args) {
+            if (EsVerdadero(arg)) {
+                return arg;  // El primer valor verdadero
+            }
+        }
+        
+        return false;
+    }
+    
+    private Object not(List<Object> args) {
+        if (args.size() != 1) {
+            throw new RuntimeException("not requiere exactamente un argumento");
+        }
+        
+        return !EsVerdadero(args.get(0));
+    }
+    
+    private Object isNull(List<Object> args) {
+        if (args.size() != 1) {
+            throw new RuntimeException("null? requiere exactamente un argumento");
+        }
+        
+        return args.get(0) == null || 
+               (args.get(0) instanceof List && ((List<?>) args.get(0)).isEmpty());
+    }
+    
+    private Object isNumber(List<Object> args) {
+        if (args.size() != 1) {
+            throw new RuntimeException("number? requiere exactamente un argumento");
+        }
+        
+        return args.get(0) instanceof Double;
+    }
+    
+    private Object isSymbol(List<Object> args) {
+        if (args.size() != 1) {
+            throw new RuntimeException("symbol? requiere exactamente un argumento");
+        }
+        
+        return args.get(0) instanceof String && !(((String) args.get(0)).startsWith("\""));
+    }
+    
+    private Object isList(List<Object> args) {
+        if (args.size() != 1) {
+            throw new RuntimeException("list? requiere exactamente un argumento");
+        }
+        
+        return args.get(0) instanceof List;
+    }
+    
+    /**
+     * Evalúa una expresión LISP representada como un nodo del AST.
+     * @param ast Nodo raíz del AST
+     * @return Resultado de la evaluación
+     */
+    public Object evaluate(LispNode ast) {
+        return evaluate(ast, new HashMap<>());
+    }
+
 
     /**
      * Método principal para evaluar un nodo del AST.
